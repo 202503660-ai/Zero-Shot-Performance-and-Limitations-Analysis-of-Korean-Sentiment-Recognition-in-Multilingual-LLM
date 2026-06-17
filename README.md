@@ -5,22 +5,63 @@
 **2026년 1학기 자연어처리기반사회분석 수업의 다국어 LLM의 한국어 감정 인식 제로샷 성능 및 한계 분석의 레포지토리 입니다.**
 
 ---
-## 실행 환경 권장
-이 프로젝트는 **Google Colab A100 GPU** 환경에 최적화되어 있습니다.
-- **Google Colab A100 GPU 환경을 권장합니다.**
-- RAPIDS 라이브러리(`cuml`, `cudf`)를 활용한 고속 클러스터링/차원 축소와 `vLLM` 및 `lm-eval-harness`를 이용한 LLM 제로샷 추론을 실행하기 위해서는 A100 환경이 필수적입니다.
-- A100의 CUDA 버전에 맞추어 vLLM과 huggingface hub 라이브
-- WSL 환경 혹은 Linux GPU 서버 환경에서도 구동 가능하지만, 라이브러리 의존성 문제 해결을 위해 **Google Colab A100 GPU**에서 구동하는 것을 강력하게 권장합니다.
+## 쓰인 라이브러리들 및 실행 환경 필수 요구 사항
 
+### 1. 실행 환경 요구 사항 (Google Colab A100 GPU 필수)
+본 프로젝트는 **Python 3**, **허깅페이스 토큰**,**GPU 가속(CUDA)** 및 **대용량 VRAM(A100 40GB 이상)** 환경이 강제되는 작업들로 구성되어 있습니다.
+- **Google Colab A100 GPU 환경에서의 실행이 무조건적(필수)으로 요구됩니다.**
+- **Python 3 (구글 코랩 기본 런타임 환경인 Python 3.10 이상)** 버전에서 구동이 필수적이며, 이전 Python 버전과의 호환성은 보장하지 않습니다.
+- Gemma와 Exaone의 접근을 위해 키를 발급받아야하며 키를 발급받고 난 후 **허깅페이스 토큰**을 생성하여 로그인 해야합니다.
+- **필수 지정 사유**
+  - 본 프로젝트에 사용된 `vllm`, `huggingface_hub`, 그리고 `cuda` 간의 매우 복잡한 패키지 의존성 및 버전 호환성 문제로 인해, Colab A100 환경이 제공하는 CUDA 런타임 환경이 아니면 설치/빌드 시 심각한 패키지 충돌이나 런타임 오류가 발생하여 실행이 불가능합니다.
+  - 또한, vLLM을 활용한 로컬 다국어 거대 언어 모델(LLM) 제로샷 추론(`EXAONE-4.0-1.2B`, `Qwen3.5-2B`, `gemma-4-E2B-it`) 및 GPU 가속 기반 RAPIDS 라이브러리(`cuml`, `cudf`)를 활용한 고속 클러스터링/차원 축소 작업은 대용량 VRAM을 소모하므로, T4, V100 GPU나 일반 로컬 CPU/GPU 환경에서는 메모리 부족(OOM) 오류가 발생합니다.
+  - Gemma와 Exaone의 경우 키가 없을 시 접근을 못할 수 있습니다.
 
-### 쓰인 라이브러리들
+### 라이브러리 설치 안내 및 버전 정보
+**저장소내의 노트북 코드에 각 코드를 위한 라이브러리 설치코드가 있으니 그것을 활용하는 것을 추천합니다.**
 
-~
+아래 명령어를 사용하여 분석 및 모델 평가에 사용된 모든 외부 라이브러리를 설치할 수 있습니다. 완벽한 결과 재현을 위해 테스트가 완료된 아래 버전들의 설치를 강력히 권장합니다.
 ~~~
-# 라이브러리를 다 쓰기엔 어려우니 ~
-# wsl 환경, 리눅스 환경, colab A100 에서 돌리는 것을 권장합니다.
-!pip install cuml cudf transformers scikit-learn huggingfacehub vllm lm-eval-harness
+# 1) 기본 패키지 및 딥러닝/텍스트 마이닝 라이브러리 설치
+!pip install vllm==0.6.3 lm-eval==0.4.4 scikit-learn==1.3.2 openpyxl==3.1.5 pyyaml==6.0.1 seaborn==0.13.2 gdown==5.2.0 ray==2.35.0 transformers==4.45.2 kiwipiepy==0.23.2 sentence-transformers==3.0.1 hdbscan==0.8.37 umap-learn==0.5.7 wordcloud==1.9.4 statsmodels==0.14.4 koreanize-matplotlib==0.1.1 cupy-cuda12x==12.2.0
+
+# 2) GPU 가속 RAPIDS 라이브러리 (cudf, cuml) 설치 (Colab A100 환경 최적 설치 명령어)
+!pip install --extra-index-url=https://pypi.nvidia.com cudf-cu12==24.4.1 cuml-cu12==24.4.1
+```
 ~~~
+### 프로젝트 사용 라이브러리 상세 버전 정보 및 용도
+
+| 라이브러리명 (Package) | 가져오기 이름 (Import) | 테스트 버전 | 주요 용도 및 역할 |
+| :--- | :--- | :--- | :--- |
+| **vllm** | `vllm` | `0.6.3` | 다국어 LLM(Exaone, Qwen, Gemma)의 고속 로컬 제로샷 추론 구동 및 GPU 자원 관리 |
+| **lm-eval** | `lm_eval` | `0.4.4` | `lm-eval-harness` 기반 커스텀 제로샷 감성 분석 평가 파이프라인 구축 및 실행 |
+| **transformers** | `transformers` | `4.45.2` | `mDeBERTa-v3` 기반 감성 점수 추론 파이프라인 생성 및 토크나이저 로드 |
+| **scikit-learn** | `sklearn` | `1.3.2` | 모델 평가 지표(Accuracy, F1-Score) 계산 및 TF-IDF 텍스트 임베딩, 코사인 거리 연산 |
+| **openpyxl** | `openpyxl` | `3.1.5` | 엑셀 데이터 파일(`.xlsx`) 읽기/쓰기 지원 |
+| **pyyaml** | `yaml` | `6.0.1` | lm-eval용 커스텀 감성분석 평가 태스크 `.yaml` 설정 파일 처리 |
+| **seaborn** | `seaborn` | `0.13.2` | 혼동 행렬(Confusion Matrix) 및 데이터 통계 분포 시각화 차트 생성 |
+| **gdown** | `gdown` | `5.2.0` | 구글 드라이브로부터 대용량 원본 데이터셋 및 설정 파일 다운로드 |
+| **ray** | `ray` | `2.35.0` | vLLM 가중치 병렬 로드 및 Ray 분산 자원 관리 |
+| **kiwipiepy** | `kiwipiepy` | `0.23.2` | 한국어 형태소 분석기(Kiwi) 기반 명사/동사/조사 등 품사(POS) 태그 추출 및 빈도 분석 |
+| **sentence-transformers** | `sentence_transformers` | `3.0.1` | SBERT 기반 한국어 문장 임베딩(Vectorization) 수행 |
+| **hdbscan** | `hdbscan` | `0.8.37` | 차원 축소된 문장 벡터의 고밀도 군집 분석(HDBSCAN 클러스터링) 수행 (CPU 폴백용) |
+| **umap-learn** | `umap` | `0.5.7` | 고차원 텍스트 벡터의 차원 축소(UMAP) 수행 (CPU 폴백용) |
+| **wordcloud** | `wordcloud` | `1.9.4` | 품사 태그 분석 결과 빈도 시각화를 위한 워드클라우드 생성 |
+| **statsmodels** | `statsmodels` | `0.14.4` | 데이터 통계적 경향성 및 정량 분석 |
+| **koreanize-matplotlib** | `koreanize_matplotlib` | `0.1.1` | Matplotlib 그래프 시각화 시 한국어 폰트 깨짐 방지 및 나눔글꼴 세팅 자동화 |
+| **cupy** | `cupy` | `12.2.0` | GPU 가속 기반 다차원 배열 연산 및 GPU 메모리 제어 |
+| **cudf (RAPIDS)** | `cudf` | `24.4.1` | RAPIDS GPU 가속 기반 고속 데이터프레임 처리 (Colab A100 필수) |
+| **cuml (RAPIDS)** | `cuml` | `24.4.1` | RAPIDS GPU 가속 기반 UMAP 차원 축소 및 HDBSCAN/KMeans 군집화 고속 연산 (Colab A100 필수) |
+| **pandas** | `pandas` | `2.2.2` | 전체 대화 데이터셋 핸들링, 전처리 데이터 병합 및 정제 |
+| **numpy** | `numpy` | `2.0.2` | 수치형 다차원 배열 연산 및 행렬 대수 연산 |
+| **matplotlib** | `matplotlib` | `3.8.4` | UMAP 산점도 및 통계 분석 시각화 그래프 드로잉 |
+| **scipy** | `scipy` | `1.11.4` | 임베딩 행렬 거리 연산 및 통계 계산 보조 |
+| **torch** | `torch` | `2.4.0` | PyTorch 딥러닝 프레임워크 (vLLM 구동 및 HuggingFace 모델 로딩 CUDA 백엔드) |
+| **tqdm** | `tqdm` | `4.67.3` | 데이터 가공 및 모델 제로샷 추론 진행률(Progress Bar) 출력 |
+| **huggingface_hub** | `huggingface_hub` | `0.24.6` | 허깅페이스 API 로그인 및 로컬 모델 가중치(EXAONE 등) 호출 및 다운로드 |
+
+> [!NOTE]
+> 파이썬 내장 표준 라이브러리(`collections`, `itertools`, `gc`, `os`, `re`, `sys`, `time`, `subprocess`, `string`)는 별도의 설치 과정 없이 즉시 임포트하여 사용됩니다.
 ---
 ## 파일 및 폴더 설명
 
@@ -47,6 +88,9 @@ vllm과 lm-eval-harness를 활용한 제로샷 감성 분석 파이프라인.
 
 ### paper 폴더
 연구에 참고한 선행연구 pdf들이 저장되어 있음.
+
+### .gitattributes
+Git LFS 사용을 위한 git 설정이 들어있음.
 
 ---
 ## 연구에 사용된 모든 데이터(xlsx, pkl, json, yaml)가 저장된 드라이브
