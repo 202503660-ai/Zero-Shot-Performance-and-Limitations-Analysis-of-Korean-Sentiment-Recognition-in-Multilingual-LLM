@@ -13,25 +13,28 @@
 !pip install cuml cudf transformers scikit-learn huggingfacehub vllm lm-eval-harness
 ~~~
 ---
-## 주요 코드들(연구에 실제로 쓰인 것들)
+## 파일 및 폴더 설명
 
-### textcleaning_sentiment_analysis: 문장 부호 제거 및 MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7을 활용하여 감성 점수 부여(-1(부정) ~ 1(긍정))
+### textcleaning_sentiment_analysis.ipynb: 문장 부호 제거 및 MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7을 활용하여 감성 점수(-1(부정) ~ 1(긍정)) 부여.
 
-### model_pipeline: vllm과 lm-eval-harness를 활용한 제로샷 감성 분석 파이프라인
+### model_pipeline_fixed.ipynb: vllm과 lm-eval-harness를 활용한 제로샷 감성 분석 파이프라인.
 
-### VariousGraphs: 그래프 및 샘플링
+### VariousGraphs.ipynb: 그래프와 표 및 HDBSCAN를 활용한 클러스터링과 Kiwi 토크나이저를 활용한 태그 분석 시행.
 
-### Shap_Analysis: Shap 결과 수행
+### VectorizationAndClustering.ipynb: 벡터화 및 클러스터링 결과를 바탕으로 샘플링을하려 했으나 vLLM 기반 환경에서 뛰어나게 잘 작동하여 샘플링을 사용하지 않음. 대신 이 코드에서 MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7을 활용하여 부여한 감성 점수에 따라 삼분위수로 나누어 감성_세기(상, 중, 하로 구분)라는 레이블을 달음. 
 
-### 데이터 폴더(xlsx, pkl, json, yaml)
-아래 드라이브에 모든 데이터가 보관되어 있습니다. 파일의 사이즈가 큰 관계로 깃헙에 직접 커밋하는 대신 드라이브 링크를 올려두겠습니다.
+### 자연어처리이현준.ipynb: 데이터 탐색에 쓰임.
+
+### resultwithtag.xlsx: 각 문장의 태그의 수(Kiwi 토크나이저의 분류에서 크게 묶어 사용)까지 기입된 최종 데이터.
+
+### figures 폴더: 그래프 png 파일들이 저장되어 있음.
+
+### paper 폴더: 연구에 참고한 선행연구 pdf들이 저장되어 있음.
+
+### 데이터(xlsx, pkl, json, yaml)가 저장된 드라이브
+아래 드라이브에 연구에 사용된 모든 데이터가 보관되어 있습니다. 파일의 사이즈가 큰 관계로 깃헙에 직접 커밋하는 대신 드라이브 링크를 올려두겠습니다.
 **https://drive.google.com/drive/u/0/folders/1WDpZNOU2LlekVgcsp1lAIUf5OphZOfCH**
----
-## 보조 코드들
 
-### VectorizationAndClustering(1): 벡터화 및 클러스터링 결과를 바탕으로 샘플링을하려 했으나 vLLM 기반 환경에서 뛰어나게 잘 작동하여 실제로 쓰이지 않음
-
-### 자연어처리이현준_: 데이터 탐색 결과를 위해 쓰려했으나 폐기
 ---
 ### 방법론
 ### 1. 수집한 데이터에 "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"으로 감정분석 시행
