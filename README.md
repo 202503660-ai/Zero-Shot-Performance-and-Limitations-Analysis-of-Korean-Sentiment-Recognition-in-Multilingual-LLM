@@ -48,8 +48,7 @@ vllm과 lm-eval-harness를 활용한 제로샷 감성 분석 파이프라인.
 ### 1. 수집한 데이터에 "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"으로 감정분석 시행
 ### 2. 감정분석 값이 입력된 데이터를 감정의 세기(abs(추론_감정_점수))에 따라 3개의 데이터로 분리(기준: 삼분위수)
 ### 3. 분리한 데이터를 각각 LLM(Exaone 4.0 1.2B, Gemma 4 E2B, Qwen 3.5 2B)에 넣고 제로샷 감성분석 수행후 정답인 것과 오답인 것으로 분류
-### 4. 각 데이터를 nlp과 데이터상의 특징(ex. 상황및 맥락 레이블)으로 특징 분석(품사 태그 등 다양한 방식 사용)
-### 5. nlp 분석 결과를 llmshap의 sliding window base shapley value으로 검증(random sampling으로 각각 1000개 정도 추출)
+### 4. 각 데이터를 nlp 분석기법과 데이터상의 특징(ex. HDBSCAN 클러스터링)으로 분석(품사 태그 등 다양한 방식 사용)
 
 ---
 ### Overleaf(LaTex)
